@@ -1,0 +1,51 @@
+name: sistema-universitario-microservicios
+description: Sistema universitario con microservicios para gestión de inscripciones y pagos
+
+services:
+  # API Gateway
+  gateway:
+    source: ./gateway
+    port: 3000
+    environment:
+      - NODE_ENV=production
+    dependencies:
+      - usuarios
+      - pagos
+      - catalogo
+
+  # Microservicio de Usuarios
+  usuarios:
+    source: ./microservicios/usuarios
+    port: 3001
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+
+  # Microservicio de Pagos
+  pagos:
+    source: ./microservicios/pagos
+    port: 3002
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+
+  # Microservicio de Catálogo
+  catalogo:
+    source: ./microservicios/catalogo
+    port: 3004
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+
+  # Frontend
+  frontend:
+    source: ./frontend
+    port: 3003
+    environment:
+      - NODE_ENV=production
+    dependencies:
+      - gateway
+
+
+
+

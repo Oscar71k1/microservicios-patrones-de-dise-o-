@@ -1,0 +1,30 @@
+{
+  "name": "sistema-inscripciones-microservicios",
+  "version": "1.0.0",
+  "description": "Sistema de gestión de inscripciones y pagos con microservicios y Firebase",
+  "main": "index.js",
+  "scripts": {
+    "start": "node start-system.js",
+    "start-concurrent": "concurrently \"npm run gateway\" \"npm run usuarios\" \"npm run pagos\" \"npm run frontend\"",
+    "start-silent": "NODE_NO_WARNINGS=1 concurrently \"npm run gateway\" \"npm run usuarios\" \"npm run pagos\" \"npm run frontend\"",
+    "gateway": "cd gateway && npm start",
+    "usuarios": "cd microservicios/usuarios && npm start",
+    "pagos": "cd microservicios/pagos && npm start",
+    "frontend": "cd frontend && npm start",
+    "install-all": "npm install && cd gateway && npm install && cd ../microservicios/usuarios && npm install && cd ../pagos && npm install && cd ../../frontend && npm install"
+  },
+  "keywords": [
+    "microservicios",
+    "firebase",
+    "saas",
+    "universidad"
+  ],
+  "author": "Arquitecto de Software",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "axios": "^1.12.2"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "sistema-inscripciones-frontend",
+  "version": "1.0.0",
+  "description": "Frontend minimalista para sistema de gestión de inscripciones y pagos",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "npx live-server --port=3003 --no-browser",
+    "serve": "npx http-server . -p 3003 -c-1"
+  },
+  "keywords": [
+    "frontend",
+    "universidad",
+    "inscripciones",
+    "pagos"
+  ],
+  "author": "Arquitecto de Software",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  }
+}

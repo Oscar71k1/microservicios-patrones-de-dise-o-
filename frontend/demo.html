@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Sistema Universitario</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .demo-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-header h1 {
+            color: #2563eb;
+            margin-bottom: 1rem;
+        }
+        
+        .demo-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            background: #f8fafc;
+        }
+        
+        .demo-section h3 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .demo-steps {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .demo-steps li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .demo-steps li:last-child {
+            border-bottom: none;
+        }
+        
+        .step-number {
+            background: #2563eb;
+            color: #fff;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .demo-credentials {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .demo-credentials h4 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+        
+        .credential-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .credential-item:last-child {
+            border-bottom: none;
+        }
+        
+        .credential-label {
+            font-weight: 500;
+            color: #64748b;
+        }
+        
+        .credential-value {
+            font-family: monospace;
+            background: #e2e8f0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .demo-actions {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .btn-demo {
+            background: #2563eb;
+            color: #fff;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-demo:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #fff;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .feature-item i {
+            color: #2563eb;
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1><i class="fas fa-graduation-cap"></i> Sistema Universitario</h1>
+            <p>Demo del sistema de gestión de inscripciones y pagos</p>
+        </div>
+
+        <div class="demo-section">
+            <h3><i class="fas fa-info-circle"></i> Información del Sistema</h3>
+            <p>Este es un sistema de microservicios con frontend minimalista para la gestión universitaria. Incluye autenticación, gestión de usuarios y sistema de pagos.</p>
+            
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-users"></i>
+                    <span>Gestión de Usuarios</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Sistema de Pagos</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Autenticación JWT</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Diseño Responsivo</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3><i class="fas fa-play-circle"></i> Cómo Probar el Sistema</h3>
+            <ol class="demo-steps">
+                <li>
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>Iniciar los Servicios</strong><br>
+                        Ejecuta <code>npm start</code> en la raíz del proyecto para iniciar todos los microservicios
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>Acceder al Frontend</strong><br>
+                        Abre <a href="http://localhost:3003" target="_blank">http://localhost:3003</a> en tu navegador
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>Registrar un Usuario</strong><br>
+                        Usa el formulario de registro para crear una cuenta de prueba
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number">4</div>
+                    <div>
+                        <strong>Explorar las Funcionalidades</strong><br>
+                        Navega por el dashboard y crea algunos pagos de prueba
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h3><i class="fas fa-key"></i> Credenciales de Prueba</h3>
+            <div class="demo-credentials">
+                <h4>Usuario Administrador (Pre-configurado)</h4>
+                <div class="credential-item">
+                    <span class="credential-label">Email:</span>
+                    <span class="credential-value">admin@universidad.com</span>
+                </div>
+                <div class="credential-item">
+                    <span class="credential-label">Contraseña:</span>
+                    <span class="credential-value">admin123</span>
+                </div>
+            </div>
+            
+            <p><strong>Nota:</strong> También puedes registrar nuevos usuarios usando el formulario de registro.</p>
+        </div>
+
+        <div class="demo-section">
+            <h3><i class="fas fa-cogs"></i> Arquitectura del Sistema</h3>
+            <ul class="demo-steps">
+                <li>
+                    <div class="step-number"><i class="fas fa-globe"></i></div>
+                    <div>
+                        <strong>Frontend (Puerto 3003)</strong><br>
+                        Interfaz de usuario minimalista y responsiva
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number"><i class="fas fa-server"></i></div>
+                    <div>
+                        <strong>API Gateway (Puerto 3000)</strong><br>
+                        Punto de entrada único para todas las peticiones
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number"><i class="fas fa-user"></i></div>
+                    <div>
+                        <strong>Microservicio Usuarios (Puerto 3001)</strong><br>
+                        Gestión de autenticación y perfiles de usuario
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number"><i class="fas fa-credit-card"></i></div>
+                    <div>
+                        <strong>Microservicio Pagos (Puerto 3002)</strong><br>
+                        Gestión de órdenes de pago y transacciones
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h3><i class="fas fa-lightbulb"></i> Características Destacadas</h3>
+            <ul class="demo-steps">
+                <li>
+                    <div class="step-number"><i class="fas fa-palette"></i></div>
+                    <div>
+                        <strong>Diseño Minimalista</strong><br>
+                        Interfaz limpia y moderna siguiendo principios de UX/UI
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number"><i class="fas fa-mobile-alt"></i></div>
+                    <div>
+                        <strong>Totalmente Responsivo</strong><br>
+                        Adaptable a dispositivos móviles, tablets y desktop
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number"><i class="fas fa-shield-alt"></i></div>
+                    <div>
+                        <strong>Autenticación Segura</strong><br>
+                        Sistema JWT con persistencia de sesión
+                    </div>
+                </li>
+                <li>
+                    <div class="step-number"><i class="fas fa-bolt"></i></div>
+                    <div>
+                        <strong>SPA (Single Page Application)</strong><br>
+                        Navegación fluida sin recargas de página
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="demo-actions">
+            <a href="index.html" class="btn-demo">
+                <i class="fas fa-rocket"></i>
+                Ir al Sistema
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
