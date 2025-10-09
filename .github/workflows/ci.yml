@@ -60,13 +60,41 @@ jobs:
           cd microservicios/${{ matrix.service }} && npm run docs || echo "No docs script found for ${{ matrix.service }}"
         fi
     
+    - name: Prepare documentation artifact
+      run: |
+        # Crear carpeta temporal para artifacts
+        mkdir -p artifact-docs
+        
+        # Copiar documentación según el servicio
+        if [ "${{ matrix.service }}" = "gateway" ]; then
+          if [ -d "gateway/docs" ]; then
+            cp -r gateway/docs/* artifact-docs/ || echo "No docs found in gateway"
+          else
+            echo "Gateway docs directory not found" > artifact-docs/README.txt
+          fi
+        else
+          if [ -d "microservicios/${{ matrix.service }}/docs" ]; then
+            cp -r microservicios/${{ matrix.service }}/docs/* artifact-docs/ || echo "No docs found in ${{ matrix.service }}"
+          else
+            echo "${{ matrix.service }} docs directory not found" > artifact-docs/README.txt
+          fi
+        fi
+        
+        # Crear archivo de información del artifact
+        echo "Documentation for ${{ matrix.service }} microservice" > artifact-docs/SERVICE_INFO.txt
+        echo "Generated on: $(date)" >> artifact-docs/SERVICE_INFO.txt
+        echo "Service: ${{ matrix.service }}" >> artifact-docs/SERVICE_INFO.txt
+        
+        # Listar contenido para verificación
+        echo "Artifact contents:"
+        ls -la artifact-docs/
+    
     - name: Upload documentation
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: ${{ matrix.service }}-documentation
-        path: |
-          ${{ matrix.service == 'gateway' && 'gateway/docs' || format('microservicios/{0}/docs', matrix.service) }}
+        path: artifact-docs/
         retention-days: 30
 
   # Job para frontend (separado porque no necesita documentación de microservicios)
