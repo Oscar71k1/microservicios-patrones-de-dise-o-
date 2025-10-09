@@ -54,11 +54,17 @@ jobs:
     
     - name: Generate documentation
       run: |
+        echo "=== Documentation for ${{ matrix.service }} ==="
         if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm run docs || echo "No docs script found for ${{ matrix.service }}"
+          cd gateway && npm run docs
+          echo "Documentation files in gateway/docs/:"
+          ls -la docs/
         else
-          cd microservicios/${{ matrix.service }} && npm run docs || echo "No docs script found for ${{ matrix.service }}"
+          cd microservicios/${{ matrix.service }} && npm run docs
+          echo "Documentation files in microservicios/${{ matrix.service }}/docs/:"
+          ls -la docs/
         fi
+        echo "=== Documentation ready ==="
     
     - name: Prepare documentation artifact
       run: |
@@ -72,40 +78,15 @@ jobs:
           DOCS_PATH="microservicios/${{ matrix.service }}/docs"
         fi
         
-        echo "Looking for documentation in: $DOCS_PATH"
+        echo "Copying documentation from: $DOCS_PATH"
         
-        # Verificar si existe la carpeta de documentación
-        if [ -d "$DOCS_PATH" ]; then
-          echo "Documentation directory found: $DOCS_PATH"
-          
-          # Verificar si hay archivos en la carpeta
-          if [ "$(ls -A $DOCS_PATH 2>/dev/null)" ]; then
-            echo "Copying documentation files..."
-            cp -r $DOCS_PATH/* artifact-docs/ 2>/dev/null || echo "Failed to copy some files"
-          else
-            echo "Documentation directory is empty, creating placeholder"
-            echo "No documentation generated for ${{ matrix.service }}" > artifact-docs/README.txt
-            echo "This is a placeholder file created because the docs directory was empty." >> artifact-docs/README.txt
-          fi
-        else
-          echo "Documentation directory not found: $DOCS_PATH"
-          echo "Creating placeholder documentation..."
-          echo "No documentation directory found for ${{ matrix.service }}" > artifact-docs/README.txt
-          echo "This is a placeholder file created because the docs directory does not exist." >> artifact-docs/README.txt
-        fi
+        # Copiar toda la documentación
+        cp -r $DOCS_PATH/* artifact-docs/
         
         # Crear archivo de información del artifact
         echo "Documentation for ${{ matrix.service }} microservice" > artifact-docs/SERVICE_INFO.txt
         echo "Generated on: $(date)" >> artifact-docs/SERVICE_INFO.txt
         echo "Service: ${{ matrix.service }}" >> artifact-docs/SERVICE_INFO.txt
-        echo "Documentation type: ${{ matrix.service == 'gateway' || matrix.service == 'usuarios' && 'JSDoc' || 'Swagger' }}" >> artifact-docs/SERVICE_INFO.txt
-        
-        # Asegurar que siempre haya al menos un archivo
-        if [ ! "$(ls -A artifact-docs/ 2>/dev/null)" ]; then
-          echo "Creating fallback documentation..."
-          echo "Fallback documentation for ${{ matrix.service }}" > artifact-docs/FALLBACK.txt
-          echo "No documentation was generated, but the artifact was created successfully." >> artifact-docs/FALLBACK.txt
-        fi
         
         # Listar contenido para verificación
         echo "Artifact contents:"
