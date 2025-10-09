@@ -287,3 +287,5 @@ setInterval(() => {
 ---
 
 **Observer Pattern** implementado exitosamente ✅
+
+

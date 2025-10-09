@@ -325,3 +325,5 @@ usuarios: { failureThreshold: 3, timeout: 5000, resetTimeout: 30000 }
 ---
 
 **Circuit Breaker Pattern** implementado exitosamente ✅
+
+
