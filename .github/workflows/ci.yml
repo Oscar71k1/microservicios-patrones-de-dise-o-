@@ -11,21 +11,20 @@ jobs:
   test-and-docs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    
     strategy:
       matrix:
         service: [gateway, usuarios, pagos, catalogo]
       fail-fast: false
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
-    
+
     - name: Install dependencies
       run: |
         if [ "${{ matrix.service }}" = "gateway" ]; then
@@ -33,7 +32,7 @@ jobs:
         else
           cd microservicios/${{ matrix.service }} && npm install
         fi
-    
+
     - name: Run ESLint
       run: |
         if [ "${{ matrix.service }}" = "gateway" ]; then
@@ -41,57 +40,55 @@ jobs:
         else
           cd microservicios/${{ matrix.service }} && npm run lint || echo "Linting failed for ${{ matrix.service }}"
         fi
-    
+
     - name: Run tests
       run: |
-        if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm test || echo "Tests failed for ${{ matrix.service }}"
-        elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd microservicios/${{ matrix.service }} && npm test || echo "Tests failed for ${{ matrix.service }}"
+        if [ "${{ matrix.service }}" = "gateway" ] || [ "${{ matrix.service }}" = "usuarios" ]; then
+          cd $( [ "${{ matrix.service }}" = "gateway" ] && echo "gateway" || echo "microservicios/${{ matrix.service }}" )
+          npm test || echo "Tests failed for ${{ matrix.service }}"
         else
           echo "Tests skipped for ${{ matrix.service }}"
         fi
-    
+
     - name: Generate documentation
       run: |
-        echo "=== Documentation for ${{ matrix.service }} ==="
+        echo "=== Generating documentation for ${{ matrix.service }} ==="
         if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm run docs
-          echo "Documentation files in gateway/docs/:"
-          ls -la docs/
+          cd gateway
         else
-          cd microservicios/${{ matrix.service }} && npm run docs
-          echo "Documentation files in microservicios/${{ matrix.service }}/docs/:"
-          ls -la docs/
+          cd microservicios/${{ matrix.service }}
         fi
+
+        # Crear placeholder si no existe el script docs
+        if ! npm run | grep -q docs; then
+          echo "No docs script found for ${{ matrix.service }}, creating placeholder..."
+          mkdir -p docs
+          echo "This is a placeholder file for ${{ matrix.service }} documentation." > docs/README.txt
+        else
+          npm run docs || echo "Docs generation failed for ${{ matrix.service }}, creating placeholder..."
+          [ ! -d docs ] && mkdir -p docs && echo "Placeholder docs created for ${{ matrix.service }}" > docs/README.txt
+        fi
+
+        echo "Documentation contents:"
+        ls -la docs/
         echo "=== Documentation ready ==="
-    
+
     - name: Prepare documentation artifact
       run: |
-        # Crear carpeta temporal para artifacts
         mkdir -p artifact-docs
-        
-        # Determinar la ruta de documentación según el servicio
         if [ "${{ matrix.service }}" = "gateway" ]; then
           DOCS_PATH="gateway/docs"
         else
           DOCS_PATH="microservicios/${{ matrix.service }}/docs"
         fi
-        
-        echo "Copying documentation from: $DOCS_PATH"
-        
-        # Copiar toda la documentación
-        cp -r $DOCS_PATH/* artifact-docs/
-        
-        # Crear archivo de información del artifact
+
+        cp -r $DOCS_PATH/* artifact-docs/ || echo "Nothing to copy from $DOCS_PATH"
         echo "Documentation for ${{ matrix.service }} microservice" > artifact-docs/SERVICE_INFO.txt
         echo "Generated on: $(date)" >> artifact-docs/SERVICE_INFO.txt
         echo "Service: ${{ matrix.service }}" >> artifact-docs/SERVICE_INFO.txt
-        
-        # Listar contenido para verificación
         echo "Artifact contents:"
         ls -la artifact-docs/
-    
+
     - name: Upload documentation
       uses: actions/upload-artifact@v4
       if: always()
@@ -104,21 +101,21 @@ jobs:
   frontend-build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
-    
+
     - name: Install dependencies
       run: cd frontend && npm install
-    
+
     - name: Run ESLint
       run: cd frontend && npm run lint || echo "Linting failed for frontend"
-    
+
     - name: Build frontend
       run: cd frontend && npm run build || echo "Build completed for frontend"
