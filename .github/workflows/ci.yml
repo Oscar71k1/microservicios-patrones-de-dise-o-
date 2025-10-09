@@ -29,9 +29,17 @@ jobs:
     - name: Install dependencies
       run: |
         if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm ci
+          cd gateway && npm ci --include=dev
         elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd microservicios/usuarios && npm ci
+          cd microservicios/usuarios && npm ci --include=dev
+        fi
+    
+    - name: Verify dependencies
+      run: |
+        if [ "${{ matrix.service }}" = "gateway" ]; then
+          cd gateway && npm list eslint || echo "ESLint not found"
+        elif [ "${{ matrix.service }}" = "usuarios" ]; then
+          cd microservicios/usuarios && npm list eslint || echo "ESLint not found"
         fi
     
     - name: Run ESLint
@@ -87,11 +95,21 @@ jobs:
     - name: Install dependencies
       run: |
         if [ "${{ matrix.service }}" = "pagos" ]; then
-          cd microservicios/pagos && npm ci
+          cd microservicios/pagos && npm ci --include=dev
         elif [ "${{ matrix.service }}" = "catalogo" ]; then
-          cd microservicios/catalogo && npm ci
+          cd microservicios/catalogo && npm ci --include=dev
         elif [ "${{ matrix.service }}" = "frontend" ]; then
-          cd frontend && npm ci
+          cd frontend && npm ci --include=dev
+        fi
+    
+    - name: Verify dependencies
+      run: |
+        if [ "${{ matrix.service }}" = "pagos" ]; then
+          cd microservicios/pagos && npm list eslint || echo "ESLint not found"
+        elif [ "${{ matrix.service }}" = "catalogo" ]; then
+          cd microservicios/catalogo && npm list eslint || echo "ESLint not found"
+        elif [ "${{ matrix.service }}" = "frontend" ]; then
+          cd frontend && npm list eslint || echo "ESLint not found"
         fi
     
     - name: Run ESLint
@@ -141,11 +159,11 @@ jobs:
     
     - name: Install all dependencies
       run: |
-        cd gateway && npm ci
-        cd ../microservicios/usuarios && npm ci
-        cd ../pagos && npm ci
-        cd ../catalogo && npm ci
-        cd ../../frontend && npm ci
+        cd gateway && npm ci --include=dev
+        cd ../microservicios/usuarios && npm ci --include=dev
+        cd ../pagos && npm ci --include=dev
+        cd ../catalogo && npm ci --include=dev
+        cd ../../frontend && npm ci --include=dev
     
     - name: Build all services
       run: |
