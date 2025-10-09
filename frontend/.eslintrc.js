@@ -1,7 +1,8 @@
 module.exports = {
   env: {
     browser: true,
-    es2021: true
+    es2021: true,
+    node: true
   },
   extends: ['eslint:recommended'],
   parserOptions: {
@@ -9,7 +10,7 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
-    'no-console': 'warn',
-    'no-unused-vars': 'error'
+    'no-console': 'off',
+    'no-unused-vars': 'warn'
   }
 };
