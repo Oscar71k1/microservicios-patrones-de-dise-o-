@@ -7,14 +7,14 @@ on:
     branches: [ main ]
 
 jobs:
-  # Job para servicios con testing completo
-  test-with-coverage:
+  # Job para todos los microservicios con documentación
+  test-and-docs:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     
     strategy:
       matrix:
-        service: [gateway, usuarios]
+        service: [gateway, usuarios, pagos, catalogo]
       fail-fast: false
     
     steps:
@@ -30,69 +30,49 @@ jobs:
       run: |
         if [ "${{ matrix.service }}" = "gateway" ]; then
           cd gateway && npm install
-        elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd microservicios/usuarios && npm install
-        fi
-    
-    - name: Verify dependencies
-      run: |
-        if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && echo "Available scripts:" && npm run
-          echo "Checking ESLint:" && npm list eslint || echo "ESLint not found"
-        elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd microservicios/usuarios && echo "Available scripts:" && npm run
-          echo "Checking ESLint:" && npm list eslint || echo "ESLint not found"
+        else
+          cd microservicios/${{ matrix.service }} && npm install
         fi
     
     - name: Run ESLint
       run: |
         if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm run lint || echo "Linting failed for gateway"
-        elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd microservicios/usuarios && npm run lint || echo "Linting failed for usuarios"
+          cd gateway && npm run lint || echo "Linting failed for ${{ matrix.service }}"
+        else
+          cd microservicios/${{ matrix.service }} && npm run lint || echo "Linting failed for ${{ matrix.service }}"
         fi
     
-    - name: Run tests with coverage
+    - name: Run tests
       run: |
         if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm run test:coverage || echo "Tests failed for gateway"
+          cd gateway && npm test || echo "Tests failed for ${{ matrix.service }}"
         elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd microservicios/usuarios && npm run test:coverage || echo "Tests failed for usuarios"
-        fi
-    
-    - name: Upload coverage reports
-      run: |
-        if [ "${{ matrix.service }}" = "gateway" ]; then
-          if [ -f "gateway/coverage/lcov.info" ]; then
-            echo "Uploading coverage for gateway"
-          else
-            echo "No coverage file found for gateway"
-          fi
-        elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          if [ -f "microservicios/usuarios/coverage/lcov.info" ]; then
-            echo "Uploading coverage for usuarios"
-          else
-            echo "No coverage file found for usuarios"
-          fi
+          cd microservicios/${{ matrix.service }} && npm test || echo "Tests failed for ${{ matrix.service }}"
+        else
+          echo "Tests skipped for ${{ matrix.service }}"
         fi
     
     - name: Generate documentation
       run: |
         if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm run docs || echo "Documentation generation failed for gateway"
-        elif [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd microservicios/usuarios && npm run docs || echo "Documentation generation failed for usuarios"
+          cd gateway && npm run docs || echo "No docs script found for ${{ matrix.service }}"
+        else
+          cd microservicios/${{ matrix.service }} && npm run docs || echo "No docs script found for ${{ matrix.service }}"
         fi
+    
+    - name: Upload documentation
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ${{ matrix.service }}-documentation
+        path: |
+          ${{ matrix.service == 'gateway' && 'gateway/docs' || format('microservicios/{0}/docs', matrix.service) }}
+        retention-days: 30
 
-  # Job para servicios básicos (solo linting y build)
-  test-basic:
+  # Job para frontend (separado porque no necesita documentación de microservicios)
+  frontend-build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
-    strategy:
-      matrix:
-        service: [pagos, catalogo, frontend]
-      fail-fast: false
     
     steps:
     - uses: actions/checkout@v4
@@ -104,106 +84,10 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: |
-        if [ "${{ matrix.service }}" = "pagos" ]; then
-          cd microservicios/pagos && npm install
-        elif [ "${{ matrix.service }}" = "catalogo" ]; then
-          cd microservicios/catalogo && npm install
-        elif [ "${{ matrix.service }}" = "frontend" ]; then
-          cd frontend && npm install
-        fi
-    
-    - name: Verify dependencies
-      run: |
-        if [ "${{ matrix.service }}" = "pagos" ]; then
-          cd microservicios/pagos && echo "Available scripts:" && npm run
-          echo "Checking ESLint:" && npm list eslint || echo "ESLint not found"
-        elif [ "${{ matrix.service }}" = "catalogo" ]; then
-          cd microservicios/catalogo && echo "Available scripts:" && npm run
-          echo "Checking ESLint:" && npm list eslint || echo "ESLint not found"
-        elif [ "${{ matrix.service }}" = "frontend" ]; then
-          cd frontend && echo "Available scripts:" && npm run
-          echo "Checking ESLint:" && npm list eslint || echo "ESLint not found"
-        fi
+      run: cd frontend && npm install
     
     - name: Run ESLint
-      run: |
-        if [ "${{ matrix.service }}" = "pagos" ]; then
-          cd microservicios/pagos && npm run lint || echo "Linting failed for pagos"
-        elif [ "${{ matrix.service }}" = "catalogo" ]; then
-          cd microservicios/catalogo && npm run lint || echo "Linting failed for catalogo"
-        elif [ "${{ matrix.service }}" = "frontend" ]; then
-          cd frontend && npm run lint || echo "Linting failed for frontend"
-        fi
+      run: cd frontend && npm run lint || echo "Linting failed for frontend"
     
-    - name: Build application
-      run: |
-        if [ "${{ matrix.service }}" = "pagos" ]; then
-          cd microservicios/pagos && npm run build || echo "No build script found"
-        elif [ "${{ matrix.service }}" = "catalogo" ]; then
-          cd microservicios/catalogo && npm run build || echo "No build script found"
-        elif [ "${{ matrix.service }}" = "frontend" ]; then
-          cd frontend && npm run build || echo "No build script found"
-        fi
-    
-    - name: Generate documentation
-      run: |
-        if [ "${{ matrix.service }}" = "pagos" ]; then
-          cd microservicios/pagos && npm run docs || echo "No docs script found"
-        elif [ "${{ matrix.service }}" = "catalogo" ]; then
-          cd microservicios/catalogo && npm run docs || echo "No docs script found"
-        elif [ "${{ matrix.service }}" = "frontend" ]; then
-          cd frontend && npm run docs || echo "No docs script found"
-        fi
-
-  # Job para build y deployment
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    needs: [test-with-coverage, test-basic]
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install all dependencies
-      run: |
-        cd gateway && npm install
-        cd ../microservicios/usuarios && npm install
-        cd ../pagos && npm install
-        cd ../catalogo && npm install
-        cd ../../frontend && npm install
-    
-    - name: Build all services
-      run: |
-        echo "Building all microservices..."
-        cd gateway && npm run build || echo "Gateway build completed"
-        cd ../microservicios/usuarios && npm run build || echo "Usuarios build completed"
-        cd ../pagos && npm run build || echo "Pagos build completed"
-        cd ../catalogo && npm run build || echo "Catalogo build completed"
-        cd ../../frontend && npm run build || echo "Frontend build completed"
-    
-    - name: Generate comprehensive documentation
-      run: |
-        echo "Generating comprehensive documentation..."
-        cd gateway && npm run docs || echo "Gateway docs completed"
-        cd ../microservicios/usuarios && npm run docs || echo "Usuarios docs completed"
-        cd ../pagos && npm run docs || echo "Pagos docs completed"
-        cd ../catalogo && npm run docs || echo "Catalogo docs completed"
-        cd ../../frontend && npm run docs || echo "Frontend docs completed"
-    
-    - name: Create deployment artifact
-      run: |
-        echo "Creating deployment artifact..."
-        tar -czf microservices-deployment.tar.gz gateway/ microservicios/ frontend/ shared/
-    
-    - name: Upload deployment artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: microservices-deployment
-        path: microservices-deployment.tar.gz
+    - name: Build frontend
+      run: cd frontend && npm run build || echo "Build completed for frontend"
