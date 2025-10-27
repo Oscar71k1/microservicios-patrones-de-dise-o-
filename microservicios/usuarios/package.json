@@ -1,0 +1,30 @@
+{
+  "name": "microservicio-usuarios",
+  "version": "1.0.0",
+  "description": "Microservicio para gestión de usuarios y autenticación",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "docs": "mkdir -p docs && jsdoc -c jsdoc.conf.json -d docs/ . && echo JSDoc documentation generated successfully"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "firebase-admin": "^11.11.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "supertest": "^6.3.0",
+    "eslint": "^8.0.0",
+    "jsdoc": "^4.0.2",
+    "docdash": "^1.2.0"
+  }
+}
+

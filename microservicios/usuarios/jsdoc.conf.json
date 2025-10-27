@@ -1,0 +1,42 @@
+{
+  "source": {
+    "include": ["./server.js"],
+    "includePattern": ".js$",
+    "excludePattern": "(node_modules/|docs/|__tests__/)"
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": false,
+    "default": {
+      "outputSourceFiles": true
+    },
+    "docdash": {
+      "static": true,
+      "sort": "longname, linenum, category",
+      "sectionOrder": [
+        "Classes",
+        "Modules",
+        "Externals",
+        "Events",
+        "Namespaces",
+        "Mixins",
+        "Tutorials",
+        "Interfaces",
+        "Typedefs",
+        "Global"
+      ]
+    }
+  },
+  "opts": {
+    "encoding": "utf8",
+    "destination": "./docs/",
+    "recurse": true,
+    "verbose": true,
+    "template": "docdash"
+  },
+  "markdown": {
+    "parser": "gfm",
+    "hardwrap": true
+  }
+}
