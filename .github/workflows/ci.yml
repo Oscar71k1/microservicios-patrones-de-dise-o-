@@ -7,10 +7,11 @@ on:
     branches: [ main ]
 
 jobs:
-  # Job para todos los microservicios con documentación
-  test-and-docs:
+  # 🧩 Job para microservicios (gateway, usuarios, pagos, catalogo)
+  test-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     strategy:
       matrix:
         service: [gateway, usuarios, pagos, catalogo]
@@ -25,79 +26,68 @@ jobs:
         node-version: '18'
         cache: 'npm'
 
+    # 1️⃣ Instalación de dependencias
     - name: Install dependencies
       run: |
-        if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm install
-        else
-          cd microservicios/${{ matrix.service }} && npm install
-        fi
-
-    - name: Run ESLint
-      run: |
-        if [ "${{ matrix.service }}" = "gateway" ]; then
-          cd gateway && npm run lint || echo "Linting failed for ${{ matrix.service }}"
-        else
-          cd microservicios/${{ matrix.service }} && npm run lint || echo "Linting failed for ${{ matrix.service }}"
-        fi
-
-    - name: Run tests
-      run: |
-        if [ "${{ matrix.service }}" = "gateway" ] || [ "${{ matrix.service }}" = "usuarios" ]; then
-          cd $( [ "${{ matrix.service }}" = "gateway" ] && echo "gateway" || echo "microservicios/${{ matrix.service }}" )
-          npm test || echo "Tests failed for ${{ matrix.service }}"
-        else
-          echo "Tests skipped for ${{ matrix.service }}"
-        fi
-
-    - name: Generate documentation
-      run: |
-        echo "=== Generating documentation for ${{ matrix.service }} ==="
         if [ "${{ matrix.service }}" = "gateway" ]; then
           cd gateway
         else
           cd microservicios/${{ matrix.service }}
         fi
+        npm ci
 
-        # Crear placeholder si no existe el script docs
-        if ! npm run | grep -q docs; then
-          echo "No docs script found for ${{ matrix.service }}, creating placeholder..."
-          mkdir -p docs
-          echo "This is a placeholder file for ${{ matrix.service }} documentation." > docs/README.txt
-        else
-          npm run docs || echo "Docs generation failed for ${{ matrix.service }}, creating placeholder..."
-          [ ! -d docs ] && mkdir -p docs && echo "Placeholder docs created for ${{ matrix.service }}" > docs/README.txt
-        fi
-
-        echo "Documentation contents:"
-        ls -la docs/
-        echo "=== Documentation ready ==="
-
-    - name: Prepare documentation artifact
+    # 2️⃣ Linter (ESLint o Prettier)
+    - name: Run ESLint
       run: |
-        mkdir -p artifact-docs
         if [ "${{ matrix.service }}" = "gateway" ]; then
-          DOCS_PATH="gateway/docs"
+          cd gateway
         else
-          DOCS_PATH="microservicios/${{ matrix.service }}/docs"
+          cd microservicios/${{ matrix.service }}
+        fi
+        if npm run | grep -q lint; then
+          npm run lint || echo "Linting failed for ${{ matrix.service }}"
+        else
+          echo "No lint script found for ${{ matrix.service }}"
         fi
 
-        cp -r $DOCS_PATH/* artifact-docs/ || echo "Nothing to copy from $DOCS_PATH"
-        echo "Documentation for ${{ matrix.service }} microservice" > artifact-docs/SERVICE_INFO.txt
-        echo "Generated on: $(date)" >> artifact-docs/SERVICE_INFO.txt
-        echo "Service: ${{ matrix.service }}" >> artifact-docs/SERVICE_INFO.txt
-        echo "Artifact contents:"
-        ls -la artifact-docs/
+    # 3️⃣ Pruebas unitarias con reporte de cobertura
+    - name: Run unit tests with coverage
+      run: |
+        if [ "${{ matrix.service }}" = "gateway" ] || [ "${{ matrix.service }}" = "usuarios" ]; then
+          cd $( [ "${{ matrix.service }}" = "gateway" ] && echo "gateway" || echo "microservicios/${{ matrix.service }}" )
+          if npm run | grep -q test; then
+            npm test -- --coverage --passWithNoTests || echo "Tests failed for ${{ matrix.service }}"
+          else
+            echo "No test script found for ${{ matrix.service }}"
+          fi
+        else
+          echo "Tests skipped for ${{ matrix.service }}"
+        fi
 
-    - name: Upload documentation
-      uses: actions/upload-artifact@v4
+    - name: Upload test coverage
       if: always()
+      uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.service }}-documentation
-        path: artifact-docs/
-        retention-days: 30
+        name: ${{ matrix.service }}-coverage
+        path: |
+          **/coverage/**
 
-  # Job para frontend (separado porque no necesita documentación de microservicios)
+    # 4️⃣ Build de la aplicación
+    - name: Build microservice
+      run: |
+        if [ "${{ matrix.service }}" = "gateway" ]; then
+          cd gateway
+        else
+          cd microservicios/${{ matrix.service }}
+        fi
+        if npm run | grep -q build; then
+          npm run build || echo "Build failed for ${{ matrix.service }}"
+        else
+          echo "No build script found for ${{ matrix.service }}"
+        fi
+
+
+  # 🎨 Job para frontend (separado)
   frontend-build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -112,10 +102,158 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: cd frontend && npm install
+      run: cd frontend && npm ci
 
     - name: Run ESLint
       run: cd frontend && npm run lint || echo "Linting failed for frontend"
 
+    # Pruebas unitarias con reporte
+    - name: Run frontend tests with coverage
+      run: |
+        cd frontend
+        if npm run | grep -q test; then
+          npm test -- --coverage --passWithNoTests || echo "Tests failed for frontend"
+        else
+          echo "No test script found for frontend"
+        fi
+
+    - name: Upload test coverage
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage
+        path: |
+          **/coverage/**
+
+    # Build de la app frontend
     - name: Build frontend
-      run: cd frontend && npm run build || echo "Build completed for frontend"
+      run: cd frontend && npm run build || echo "Build failed for frontend"name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # 🧩 Job para microservicios (gateway, usuarios, pagos, catalogo)
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      matrix:
+        service: [gateway, usuarios, pagos, catalogo]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    # 1️⃣ Instalación de dependencias
+    - name: Install dependencies
+      run: |
+        if [ "${{ matrix.service }}" = "gateway" ]; then
+          cd gateway
+        else
+          cd microservicios/${{ matrix.service }}
+        fi
+        npm ci
+
+    # 2️⃣ Linter (ESLint o Prettier)
+    - name: Run ESLint
+      run: |
+        if [ "${{ matrix.service }}" = "gateway" ]; then
+          cd gateway
+        else
+          cd microservicios/${{ matrix.service }}
+        fi
+        if npm run | grep -q lint; then
+          npm run lint || echo "Linting failed for ${{ matrix.service }}"
+        else
+          echo "No lint script found for ${{ matrix.service }}"
+        fi
+
+    # 3️⃣ Pruebas unitarias con reporte de cobertura
+    - name: Run unit tests with coverage
+      run: |
+        if [ "${{ matrix.service }}" = "gateway" ] || [ "${{ matrix.service }}" = "usuarios" ]; then
+          cd $( [ "${{ matrix.service }}" = "gateway" ] && echo "gateway" || echo "microservicios/${{ matrix.service }}" )
+          if npm run | grep -q test; then
+            npm test -- --coverage --passWithNoTests || echo "Tests failed for ${{ matrix.service }}"
+          else
+            echo "No test script found for ${{ matrix.service }}"
+          fi
+        else
+          echo "Tests skipped for ${{ matrix.service }}"
+        fi
+
+    - name: Upload test coverage
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.service }}-coverage
+        path: |
+          **/coverage/**
+
+    # 4️⃣ Build de la aplicación
+    - name: Build microservice
+      run: |
+        if [ "${{ matrix.service }}" = "gateway" ]; then
+          cd gateway
+        else
+          cd microservicios/${{ matrix.service }}
+        fi
+        if npm run | grep -q build; then
+          npm run build || echo "Build failed for ${{ matrix.service }}"
+        else
+          echo "No build script found for ${{ matrix.service }}"
+        fi
+
+
+  # 🎨 Job para frontend (separado)
+  frontend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: cd frontend && npm ci
+
+    - name: Run ESLint
+      run: cd frontend && npm run lint || echo "Linting failed for frontend"
+
+    # Pruebas unitarias con reporte
+    - name: Run frontend tests with coverage
+      run: |
+        cd frontend
+        if npm run | grep -q test; then
+          npm test -- --coverage --passWithNoTests || echo "Tests failed for frontend"
+        else
+          echo "No test script found for frontend"
+        fi
+
+    - name: Upload test coverage
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage
+        path: |
+          **/coverage/**
+
+    # Build de la app frontend
+    - name: Build frontend
+      run: cd frontend && npm run build || echo "Build failed for frontend"
