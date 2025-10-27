@@ -109,6 +109,10 @@ temp/
 ehthumbs.db
 Thumbs.db
 
+# Ignorar accesos directos de Windows
+.lnk
+
+
 
 
 
